@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天天感恩 · 终极完整版</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#040814;color:white;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at center,rgba(0,255,255,.12),transparent 60%);z-index:-1;animation:pulse 6s ease-in-out infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.6}50%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:.6}}
+body::after{content:'';position:fixed;width:200%;height:200%;background-image:radial-gradient(white 1px,transparent 1px);background-size:50px 50px;opacity:.08;animation:bg 60s linear infinite;z-index:-2}
+@keyframes bg{from{transform:translate(0,0)}to{transform:translate(-500px,-500px)}}
+.login-page{height:100vh;display:flex;justify-content:center;align-items:center}
+.login-box{width:430px;padding:45px;background:rgba(255,255,255,.08);border-radius:35px;backdrop-filter:blur(20px);text-align:center;box-shadow:0 0 40px rgba(0,255,255,.25)}
+.login-box h1{font-size:58px;background:linear-gradient(90deg,#00f2fe,#8e2de2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:15px}
+input{width:100%;padding:15px;border:none;border-radius:15px;background:rgba(255,255,255,.08);color:white;margin-top:15px}
+button{padding:14px 24px;border:none;border-radius:40px;background:linear-gradient(90deg,#00f2fe,#4facfe);color:white;cursor:pointer;margin-top:18px;transition:.3s}
+button:hover{transform:scale(1.05);box-shadow:0 0 20px #00f2fe}
+.main{display:none;height:100vh}
+.sidebar{width:260px;background:rgba(255,255,255,.05);padding:20px;backdrop-filter:blur(20px);overflow-y:auto}
+.logo{font-size:36px;font-weight:bold;background:linear-gradient(90deg,#00f2fe,#8e2de2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:40px}
+.menu-item{padding:18px;border-radius:18px;background:rgba(255,255,255,.05);margin-bottom:12px;cursor:pointer;transition:.3s}
+.menu-item:hover{background:rgba(0,255,255,.15);transform:translateX(6px)}
+.content{flex:1;padding:30px;overflow-y:auto}
+.page{display:none}.page.active{display:block}
+.card{background:rgba(255,255,255,.05);padding:25px;border-radius:28px;margin-bottom:25px;backdrop-filter:blur(20px)}
+.balance{display:flex;align-items:center;gap:10px;font-size:24px}
+.coin{width:26px;height:26px;clip-path:polygon(50% 0%,0% 100%,100% 100%);background:linear-gradient(45deg,#00f2fe,#00ff95);animation:spin 3s linear infinite}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.phone-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px}
+.phone{background:rgba(255,255,255,.04);padding:18px;border-radius:22px;transition:.3s;text-align:center}
+.phone:hover{transform:translateY(-8px) scale(1.03);box-shadow:0 0 30px rgba(0,255,255,.25)}
+.phone{animation:float 4s ease-in-out infinite}
+@keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+.phone img{width:100%;height:240px;object-fit:cover;border-radius:18px}
+.price{font-size:22px;color:#00f2fe;margin:12px 0}
+.timeline div{margin-top:12px;padding:15px;background:rgba(255,255,255,.04);border-left:3px solid #00f2fe;border-radius:10px}
+.gallery{display:flex;gap:10px;margin-top:20px;overflow:auto}
+.gallery img{width:160px;height:160px;object-fit:cover;border-radius:15px;transition:.3s}
+.gallery img:hover{transform:scale(1.08)}
+canvas{background:white;border-radius:18px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class='login-page' id='loginPage'>
+<div class='login-box'>
+<h1>天天感恩</h1>
+<p>未来科技高级商城系统</p>
+<input type='text' id='user' placeholder='请输入账号'>
+<input type='password' id='pass' placeholder='请输入密码'>
+<button onclick='login()'>登录进入</button>
+<button onclick='guestLogin()'>游客进入</button>
+<button onclick='showRegister()'>注册账号</button>
+</div>
+</div>
+
+<div class='login-page' id='registerPage' style='display:none'>
+<div class='login-box'>
+<h1>注册账号</h1>
+<p>滑动验证后即可注册</p>
+<input type='text' id='regUser' placeholder='请输入新账号'>
+<input type='password' id='regPass' placeholder='请输入新密码'>
+<br><br>
+<input type='range' id='slider' min='0' max='100'>
+<p id='verifyText'>请滑动完成验证</p>
+<button onclick='register()'>立即注册</button>
+<button onclick='backLogin()'>返回登录</button>
+</div>
+</div>
+
+<div class='main' id='mainPage'>
+<div class='sidebar'>
+<div class='logo'>天天感恩</div>
+<div class='menu-item' onclick="showPage('home')">🏠 Home主页</div>
+<div class='menu-item' onclick="showPage('shop')">🛒 手机商城</div>
+<div class='menu-item' onclick="showPage('story')">👑 高会恩经历</div>
+<div class='menu-item' onclick="showPage('recharge')">💎 充值中心</div>
+<div class='menu-item' onclick="showPage('settings')">⚙️ 设置中心</div>
+<div class='menu-item' onclick="showPage('games')">🎮 小游戏</div>
+<div class='menu-item' onclick="showPage('merit')">🔔 功德木鱼</div>
+</div>
+
+<div class='content'>
+<div class='page active' id='home'>
+<div class='card'>
+<h1>欢迎来到天天感恩</h1><br>
+<div class='balance'><div class='coin'></div><span id='money'>2000</span></div>
+</div>
+
+<div class='card'>
+<h2>📦 发货中订单</h2>
+<br>
+<button onclick="showShipping()">查看发货中详情</button>
+<div class='timeline' id='orders'><div>暂无待发货订单</div></div>
+</div>
+
+<div class='card'>
+<h2>✅ 已到货订单</h2>
+<br>
+<button onclick="showArrived()">查看已到货详情</button>
+<div class='timeline' id='arrivedOrders'><div>暂无已到货订单</div></div>
+</div>
+
+<div class='card'>
+<h2>🚚 实时物流轨迹</h2><br>
+<div id='trackingMap' style='line-height:2;color:#00f2fe'>暂无物流信息</div>
+</div>
+</div>
+
+<div class='page' id='shop'>
+<h1 style='margin-bottom:25px'>旗舰手机商城</h1>
+<div class='phone-grid' id='phoneGrid'></div>
+</div>
+
+<div class='page' id='story'>
+<div class='card'>
+<h1>高会恩创业经历</h1><br>
+<div style='display:flex;gap:20px;align-items:center;flex-wrap:wrap'>
+<img src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=500&auto=format&fit=crop' style='width:260px;height:180px;object-fit:cover;border-radius:20px;'>
+<p style='line-height:2;font-size:18px;color:#ddd;flex:1'>
+高会恩是一位热爱科技与未来设计的人。
+从最初研究手机系统，到后面开发属于自己的未来科技平台。
+最终创建了天天感恩未来商城系统。
+</p>
+</div>
+<br><br>
+<div style='font-size:34px;font-weight:bold;color:#00f2fe;line-height:2'>
+@郑意设计部<br>
+@郑意义代码部
+</div>
+</div>
+</div>
+
+<div class='page' id='recharge'>
+<div class='card'>
+<h1>充值中心</h1><br>
+<button onclick='daily()'>每日签到领取20000币</button>
+<button onclick='fakeRecharge()'>模拟充值50000币</button>
+</div>
+</div>
+
+<div class='page' id='settings'>
+<div class='card'>
+<h1>设置中心</h1>
+<input type='text' id='newUser' placeholder='修改账号'>
+<input type='password' id='newPass' placeholder='修改密码'>
+<button onclick='saveSettings()'>永久保存</button>
+</div>
+</div>
+
+<div class='page' id='games'>
+<div class='card' style='text-align:center'>
+<h1>恐龙跳一跳</h1>
+<p>按空格键跳跃</p>
+<canvas id='game' width='700' height='220'></canvas>
+</div>
+</div>
+
+<div class='page' id='merit'>
+<div class='card' style='text-align:center'>
+<h1>电子木鱼</h1><br>
+<h2>当前功德：<span id='meritNum'>0</span></h2>
+<img onclick='knock()' src='https://images.unsplash.com/photo-1528715471579-d1bcf0ba5e83?q=80&w=800&auto=format&fit=crop' style='width:260px;height:260px;object-fit:cover;border-radius:50%;cursor:pointer;box-shadow:0 0 40px rgba(255,215,0,.4);transition:.3s' onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+<br><br>
+<button style='font-size:28px;padding:20px 50px' onclick='knock()'>🔔 敲木鱼</button>
+<p style='margin-top:20px'>功德达到50自动兑换20000三角币</p>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+let balance = parseInt(localStorage.getItem('money') || '2000');
+let signed = false;
+let merit = 0;
+
+const defaultUser = '123456';
+const defaultPass = '123456';
+
+function getAccount(){
+ return localStorage.getItem('account') || defaultUser;
+}
+
+function getPassword(){
+ return localStorage.getItem('password') || defaultPass;
+}
+
+function updateMoney(){
+ localStorage.setItem('money', balance);
+ const moneyEl = document.getElementById('money');
+ if(moneyEl) moneyEl.innerText = balance;
+}
+
+function login(){
+ const u = document.getElementById('user').value.trim();
+ const p = document.getElementById('pass').value.trim();
+
+ if((u === getAccount() && p === getPassword()) || (u===defaultUser && p===defaultPass)){
+   document.getElementById('loginPage').style.display='none';
+   document.getElementById('registerPage').style.display='none';
+   document.getElementById('mainPage').style.display='flex';
+   updateMoney();
+ }else{
+   alert('账号或密码错误');
+ }
+}
+
+function guestLogin(){
+ document.getElementById('loginPage').style.display='none';
+ document.getElementById('registerPage').style.display='none';
+ document.getElementById('mainPage').style.display='flex';
+ updateMoney();
+}
+
+function showRegister(){
+ document.getElementById('loginPage').style.display='none';
+ document.getElementById('registerPage').style.display='flex';
+}
+
+function backLogin(){
+ document.getElementById('registerPage').style.display='none';
+ document.getElementById('loginPage').style.display='flex';
+}
+
+function register(){
+ const slider = document.getElementById('slider');
+ const user = document.getElementById('regUser').value.trim();
+ const pass = document.getElementById('regPass').value.trim();
+
+ if(parseInt(slider.value) < 90){
+   alert('请完成滑动验证');
+   return;
+ }
+
+ if(!user || !pass){
+   alert('请输入账号密码');
+   return;
+ }
+
+ localStorage.setItem('account', user);
+ localStorage.setItem('password', pass);
+
+ alert('注册成功');
+ backLogin();
+}
+
+function showPage(id){
+ document.querySelectorAll('.page').forEach(page=>{
+   page.classList.remove('active');
+ });
+
+ const target = document.getElementById(id);
+ if(target){
+   target.classList.add('active');
+ }
+}
+
+function daily(){
+ if(!signed){
+   balance += 20000;
+   signed = true;
+   updateMoney();
+   alert('签到成功 +20000');
+ }else{
+   alert('今天已经签到');
+ }
+}
+
+function fakeRecharge(){
+ balance += 50000;
+ updateMoney();
+ alert('充值成功');
+}
+
+function saveSettings(){
+ const newUser = document.getElementById('newUser').value.trim();
+ const newPass = document.getElementById('newPass').value.trim();
+
+ if(newUser){
+   localStorage.setItem('account', newUser);
+ }
+
+ if(newPass){
+   localStorage.setItem('password', newPass);
+ }
+
+ alert('设置保存成功');
+}
+
+function knock(){
+ merit++;
+ document.getElementById('meritNum').innerText = merit;
+
+ if(merit >= 50){
+   balance += 20000;
+   merit = 0;
+   document.getElementById('meritNum').innerText = 0;
+   updateMoney();
+   alert('功德兑换成功 +20000');
+ }
+}
+
+function buy(name, price){
+ if(balance < price){
+   alert('余额不足');
+   return;
+ }
+
+ balance -= price;
+ updateMoney();
+
+ const orders = document.getElementById('orders');
+ const arrived = document.getElementById('arrivedOrders');
+ const tracking = document.getElementById('trackingMap');
+
+ orders.innerHTML = `<div>📦 ${name} 发货中...</div>`;
+
+ tracking.innerHTML = `
+ 🚚 深圳仓库 已出库<br>
+ ⬇<br>
+ 🚚 广州中转中心<br>
+ ⬇<br>
+ 🚚 上海航空中心<br>
+ ⬇<br>
+ 🚚 北京快递总站<br>
+ ⬇<br>
+ 🏠 正在派送
+ `;
+
+ setTimeout(()=>{
+   arrived.innerHTML += `<div>✅ ${name} 已送达</div>`;
+   orders.innerHTML = '<div>暂无待发货订单</div>';
+ },10000);
+
+ alert(name + ' 购买成功');
+}
+
+function showShipping(){
+ alert('物流详情：深圳 → 广州 → 上海 → 北京 → 派送');
+}
+
+function showArrived(){
+ alert('已到货订单可在主页查看');
+}
+
+const canvas = document.getElementById('game');
+if(canvas){
+ const ctx = canvas.getContext('2d');
+ let dino={x:50,y:170,w:40,h:40,vy:0,jump:false};
+ let cactus={x:700,y:180,w:20,h:30};
+
+ function draw(){
+  ctx.clearRect(0,0,700,220);
+  ctx.fillStyle='black';
+  ctx.fillRect(dino.x,dino.y,dino.w,dino.h);
+  ctx.fillRect(cactus.x,cactus.y,cactus.w,cactus.h);
+
+  if(dino.jump){
+   dino.vy += 0.8;
+   dino.y += dino.vy;
+   if(dino.y >= 170){
+    dino.y = 170;
+    dino.jump = false;
+   }
+  }
+
+  cactus.x -= 6;
+  if(cactus.x < -20) cactus.x = 700;
+
+  requestAnimationFrame(draw);
+ }
+
+ document.addEventListener('keydown',e=>{
+  if(e.code==='Space' && !dino.jump){
+   dino.jump = true;
+   dino.vy = -12;
+  }
+ });
+
+ draw();
+}
+
+function initPhones(){
+ const grid = document.getElementById('phoneGrid');
+ if(!grid) return;
+
+ grid.innerHTML='';
+
+ const phones=[
+['iPhone 17 Pro Max',12999,'https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=1200&auto=format&fit=crop'],
+['iPhone 16 Pro',10999,'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?q=80&w=1200&auto=format&fit=crop'],
+['iPhone 15 Pro Max',9999,'https://images.unsplash.com/photo-1510557880182-3f8cbf930f6d?q=80&w=1200&auto=format&fit=crop'],
+['Xiaomi 15 Ultra',6999,'https://images.unsplash.com/photo-1580910051074-3eb694886505?q=80&w=1200&auto=format&fit=crop'],
+['Xiaomi MIX Fold',11999,'https://images.unsplash.com/photo-1542751110-97427bbecf20?q=80&w=1200&auto=format&fit=crop'],
+['Huawei Mate 70 RS',15999,'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop'],
+['Huawei Pura 80',9999,'https://images.unsplash.com/photo-1512499617640-c74ae3a79d37?q=80&w=1200&auto=format&fit=crop'],
+['荣耀 Magic 7 Pro',6999,'https://images.unsplash.com/photo-1605236453806-6ff36851218e?q=80&w=1200&auto=format&fit=crop'],
+['OPPO Find X8 Ultra',7999,'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=1200&auto=format&fit=crop'],
+['Vivo X200 Ultra',7999,'https://images.unsplash.com/photo-1603899122634-f086ca5f5ddd?q=80&w=1200&auto=format&fit=crop'],
+['Samsung S26 Ultra',12999,'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?q=80&w=1200&auto=format&fit=crop'],
+['RedMagic 10 Pro',6999,'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?q=80&w=1200&auto=format&fit=crop'],
+['ROG Phone 9',9999,'https://images.unsplash.com/photo-1556656793-08538906a9f8?q=80&w=1200&auto=format&fit=crop'],
+['OnePlus 13',4999,'https://images.unsplash.com/photo-1520923642038-b4259acecbd7?q=80&w=1200&auto=format&fit=crop'],
+['realme GT7 Pro',3999,'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=1200&auto=format&fit=crop'],
+['iQOO Neo10',3599,'https://images.unsplash.com/photo-1583573636246-18cb2246697f?q=80&w=1200&auto=format&fit=crop'],
+['Pixel 10 Pro',7999,'https://images.unsplash.com/photo-1592434134753-a70baf7979d1?q=80&w=1200&auto=format&fit=crop'],
+['Nothing Phone 3',4599,'https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?q=80&w=1200&auto=format&fit=crop'],
+['魅族 21 Pro',4999,'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?q=80&w=1200&auto=format&fit=crop'],
+['努比亚 Z70 Ultra',5999,'https://images.unsplash.com/photo-1601972602237-8c79241e468b?q=80&w=1200&auto=format&fit=crop'],
+['Sony Xperia 1 VI',8999,'https://images.unsplash.com/photo-1512054502232-10a0a035d672?q=80&w=1200&auto=format&fit=crop'],
+['Moto Edge 60',3999,'https://images.unsplash.com/photo-1585060544812-6b45742d762f?q=80&w=1200&auto=format&fit=crop'],
+['Lenovo Legion Y90',4999,'https://images.unsplash.com/photo-1584006682522-dc17d6c0d9ac?q=80&w=1200&auto=format&fit=crop'],
+['ASUS Zenfone 12',4599,'https://images.unsplash.com/photo-1596558450268-9c27524ba856?q=80&w=1200&auto=format&fit=crop'],
+['Black Shark 7',5999,'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?q=80&w=1200&auto=format&fit=crop'],
+['荣耀 X70',2599,'https://images.unsplash.com/photo-1573148195900-7845dcb9b127?q=80&w=1200&auto=format&fit=crop'],
+['OPPO Reno 15',3299,'https://images.unsplash.com/photo-1583394838336-acd977736f90?q=80&w=1200&auto=format&fit=crop'],
+['Vivo S20',2999,'https://images.unsplash.com/photo-1567581935884-3349723552ca?q=80&w=1200&auto=format&fit=crop'],
+['Redmi K90',3999,'https://images.unsplash.com/photo-1585060544812-6b45742d762f?q=80&w=1200&auto=format&fit=crop'],
+['Galaxy Z Fold 7',14999,'https://images.unsplash.com/photo-1610792516307-ea5acd9c3b00?q=80&w=1200&auto=format&fit=crop']
+];
+
+ phones.forEach((p,i)=>{
+  const card=document.createElement('div');
+  card.className='phone';
+  card.innerHTML=`
+   <img src='${p[2]}'>
+   <h2>${p[0]}</h2>
+   <div class='price'>${p[1]} 币</div>
+   <button onclick="showDetail('${p[0]}',${p[1]},${1000+i*200},'${p[2]}')">查看详情</button>
+  `;
+  grid.appendChild(card);
+ });
+}
+
+function showDetail(name,price,usd,img){
+ document.getElementById('shop').innerHTML=`
+ <div class='card'>
+  <h1>${name}</h1>
+  <br>
+  <div style='display:flex;justify-content:center'>
+   <img src='${img}' style='width:360px;height:260px;object-fit:cover;border-radius:20px'>
+  </div>
+  <div class='gallery'>
+   <img src='${img}'>
+   <img src='${img}'>
+   <img src='${img}'>
+  </div>
+  <br>
+  <p style='font-size:22px'>官方价格：$${usd}</p>
+  <p style='font-size:22px;color:#00f2fe'>兑换价格：${price} 币</p>
+  <button onclick="buy('${name}',${price})">立即兑换</button>
+  <button onclick='backShop()'>返回商城</button>
+ </div>`;
+}
+
+function backShop(){
+ document.getElementById('shop').innerHTML=`<h1 style='margin-bottom:25px'>旗舰手机商城</h1><div class='phone-grid' id='phoneGrid'></div>`;
+ initPhones();
+}
+
+updateMoney();
+initPhones();
+</script>
+</body>
+</html>
